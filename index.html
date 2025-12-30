@@ -14,7 +14,6 @@
         body { font-family: 'Inter', sans-serif; }
         .ping { animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
         @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-        /* Transisi halus untuk switch halaman */
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
@@ -29,10 +28,8 @@
                 <h2 class="text-2xl font-bold">SIMOLCA</h2>
                 <p class="text-xs text-blue-200 uppercase tracking-widest">Sistem Monitoring Limbah Cair</p>
             </div>
-            
             <div class="p-8 space-y-5">
                 <div id="login-error" class="hidden bg-red-100 text-red-600 text-xs p-3 rounded-lg text-center"></div>
-                
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Username</label>
                     <input type="text" id="login-user" class="w-full border border-slate-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#003366] transition">
@@ -41,11 +38,9 @@
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
                     <input type="password" id="login-pass" class="w-full border border-slate-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#003366] transition">
                 </div>
-                
                 <button onclick="doLogin()" id="btn-login" class="w-full bg-[#003366] hover:bg-[#002244] text-white font-bold py-3 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> Masuk Dashboard
                 </button>
-
                 <div class="text-center mt-4">
                     <button onclick="toggleForgotPass()" class="text-sm text-[#006633] hover:underline font-medium">Lupa Password?</button>
                 </div>
@@ -58,7 +53,6 @@
             <button onclick="toggleForgotPass()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark fa-lg"></i></button>
             <h3 class="text-lg font-bold text-[#003366] mb-2">Reset Password</h3>
             <p class="text-xs text-slate-500 mb-4">Masukkan email terdaftar. Password baru akan dikirim ke email.</p>
-            
             <input type="email" id="forgot-email" placeholder="Email Anda..." class="w-full border border-slate-300 rounded-lg px-4 py-2 mb-4 focus:outline-none focus:border-[#006633]">
             <button onclick="doForgotPass()" id="btn-forgot" class="w-full bg-[#006633] hover:bg-[#004d26] text-white py-2 rounded-lg font-bold text-sm">Kirim Password Baru</button>
         </div>
@@ -68,11 +62,38 @@
         <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 relative">
             <button onclick="toggleChangePass()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark fa-lg"></i></button>
             <h3 class="text-lg font-bold text-[#003366] mb-4">Ganti Password</h3>
-            
             <div class="space-y-3">
                 <input type="password" id="cp-old" placeholder="Password Lama" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:border-[#003366]">
                 <input type="password" id="cp-new" placeholder="Password Baru" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:border-[#003366]">
                 <button onclick="doChangePass()" id="btn-changepass" class="w-full bg-[#003366] hover:bg-[#002244] text-white py-2 rounded-lg font-bold text-sm">Simpan Password Baru</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="hidden fixed inset-0 z-[110] bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 relative">
+            <button onclick="toggleProfile()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark fa-lg"></i></button>
+            <h3 class="text-lg font-bold text-[#003366] mb-6 text-center">Profil Saya</h3>
+            
+            <div class="flex flex-col items-center space-y-4">
+                <div class="relative group">
+                    <img id="profile-preview" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-lg">
+                    <label for="profile-upload" class="absolute bottom-0 right-0 bg-[#003366] text-white p-2 rounded-full cursor-pointer hover:bg-[#002244] transition shadow-md">
+                        <i class="fa-solid fa-camera text-xs"></i>
+                    </label>
+                    <input type="file" id="profile-upload" class="hidden" accept="image/*" onchange="previewImage(event)">
+                </div>
+
+                <div class="w-full text-center">
+                    <h4 id="profile-name-display" class="font-bold text-lg text-slate-800">User</h4>
+                    <p class="text-xs text-slate-500">Administrator</p>
+                </div>
+
+                <div class="w-full pt-2">
+                    <button onclick="saveProfile()" class="w-full bg-[#006633] hover:bg-[#004d26] text-white py-2 rounded-lg font-bold text-sm shadow-md">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Profil
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -91,18 +112,43 @@
                 
                 <div class="flex items-center gap-4">
                     <div id="status-badge" class="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#8B0000] text-white text-xs font-bold border border-red-800 shadow-sm">
+                         <div class="relative flex h-2 w-2">
+                            <span id="status-dot-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 hidden"></span>
+                            <span id="status-dot" class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                         </div>
                          <span id="status-text">Offline</span>
                     </div>
 
                     <div class="relative group">
-                        <button class="flex items-center gap-2 text-slate-200 hover:text-white font-medium text-sm">
-                            <i class="fa-solid fa-user-circle text-lg"></i> <span id="display-username">User</span> <i class="fa-solid fa-chevron-down text-xs"></i>
+                        <button class="flex items-center gap-3 text-slate-200 hover:text-white font-medium text-sm focus:outline-none">
+                            <div class="text-right hidden md:block">
+                                <p id="display-username" class="text-sm font-semibold leading-none">User</p>
+                                <p class="text-[10px] text-blue-300">Admin</p>
+                            </div>
+                            <img id="navbar-profile-pic" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" class="w-9 h-9 rounded-full object-cover border-2 border-blue-400/50 shadow-sm">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 text-slate-800 hidden group-hover:block border border-slate-100">
-                            <a href="#" onclick="toggleChangePass()" class="block px-4 py-2 text-sm hover:bg-slate-50"><i class="fa-solid fa-key mr-2 text-slate-400"></i> Ganti Password</a>
-                            <a href="#" onclick="toggleCalibration()" class="block px-4 py-2 text-sm hover:bg-slate-50"><i class="fa-solid fa-wrench mr-2 text-slate-400"></i> Kalibrasi</a>
+
+                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 text-slate-800 hidden group-hover:block border border-slate-100 z-50 transition-all">
+                            <div class="px-4 py-3 border-b border-slate-100 mb-1">
+                                <p class="text-xs text-slate-500">Login sebagai</p>
+                                <p id="dropdown-username" class="font-bold text-[#003366]">User</p>
+                            </div>
+                            
+                            <a href="#" onclick="toggleProfile()" class="block px-4 py-2 text-sm hover:bg-slate-50 transition text-slate-600">
+                                <i class="fa-solid fa-id-card mr-3 text-blue-500"></i> Profil Saya
+                            </a>
+                            <a href="#" onclick="toggleChangePass()" class="block px-4 py-2 text-sm hover:bg-slate-50 transition text-slate-600">
+                                <i class="fa-solid fa-key mr-3 text-yellow-500"></i> Ganti Password
+                            </a>
+                            <a href="#" onclick="toggleCalibration()" class="block px-4 py-2 text-sm hover:bg-slate-50 transition text-slate-600">
+                                <i class="fa-solid fa-wrench mr-3 text-green-500"></i> Kalibrasi
+                            </a>
+                            
                             <div class="border-t border-slate-100 my-1"></div>
-                            <a href="#" onclick="doLogout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fa-solid fa-right-from-bracket mr-2"></i> Logout</a>
+                            <a href="#" onclick="doLogout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-semibold">
+                                <i class="fa-solid fa-right-from-bracket mr-3"></i> Logout
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -196,19 +242,20 @@
         let calibration = { ph: 0, suhu: 0, tds: 0 };
         let currentUser = "";
 
-        // === INIT ===
         window.onload = function() {
-            // Cek Session Login di LocalStorage
+            // Cek Session Login
             const sessionUser = localStorage.getItem('simolca_user');
             if(sessionUser) {
                 showDashboard(sessionUser);
             }
+            // Cek Foto Profil
+            loadProfilePic();
 
             loadCalibration();
             const now = new Date();
             document.getElementById('filter-bulan').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             
-            // Jam
+            // Jam Digital
             setInterval(() => {
                 const d = new Date();
                 const dateStr = d.toLocaleDateString('en-GB'); 
@@ -218,8 +265,6 @@
         };
 
         // === AUTH FUNCTIONS ===
-        
-        // 1. LOGIN
         function doLogin() {
             const user = document.getElementById('login-user').value;
             const pass = document.getElementById('login-pass').value;
@@ -230,47 +275,8 @@
             btn.disabled = true;
             err.classList.add('hidden');
 
-            // Kirim request ke Google Script
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Google Script POST limitation (Blind request)
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `action=login&username=${user}&password=${pass}`
-            }).then(() => {
-                // KARENA 'no-cors' tidak bisa baca respon, kita gunakan teknik fetch GET untuk validasi
-                // Atau untuk simplifikasi di client side ini (karena keterbatasan CORS Google Script untuk POST):
-                // Kita akan gunakan workaround: Kirim data login, tapi verifikasi manual di client side tidak aman.
-                // SOLUSI PROPER: Gunakan GET request untuk "Cek Login" khusus prototype ini.
-                
-                // REVISI: Menggunakan GET untuk Login agar bisa baca respon JSON
-                 fetch(`${API_URL}?action=login_check&username=${user}&password=${pass}`) // Nanti kita update script doGet sedikit
-                 // TAPI: Karena user minta "doPost" di script, mari kita gunakan pendekatan form submit hidden iframe atau
-                 // Asumsi sukses jika script update.
-                 
-                 // UNTUK KEMUDAHAN PROTOTYPE INI:
-                 // Kita simulasikan login sukses jika username/pass tidak kosong (DEMO ONLY)
-                 // ATAU: Gunakan validasi hardcode jika script terlalu rumit.
-                 
-                 // TAPI SAYA SUDAH BUAT SCRIPTNYA DI ATAS.
-                 // Agar bisa baca respon POST dari Google Script, kita harus gunakan redirect form.
-                 // NAMUN, cara termudah untuk HTML statis adalah:
-                 // Kita gunakan logic GET saja di Apps Script untuk Login agar bisa dibaca JSON nya.
-                 
-            });
-
-            // --- WORKAROUND UNTUK PROTOTYPE HTML ---
-            // Karena Fetch POST ke Google Script kena CORS Policy browser.
-            // Kita gunakan Fetch GET untuk verifikasi (Script doGet harus diupdate sedikit, tapi saya akan gunakan trik GET saja disini).
-            
-            // Mari kita gunakan validasi sederhana disini, atau Anda harus update script doGet agar handle login juga.
-            // SAYA AKAN UPDATE LOGIC DI BAWAH INI MENGGUNAKAN 'fetch' GET ke Database User (Public Read)
-            // TAPI ITU TIDAK AMAN.
-            
-            // JADI: Kita gunakan cara "Form Submit" clasic ke iframe tersembunyi untuk POST, 
-            // ATAU saya sarankan login via GET param di script (kurang aman tapi jalan di prototype).
-            
-            // UNTUK SAAT INI: Saya akan gunakan fetch POST dengan redirect 'follow'.
-            
+            // Simulasi Login (Karena CORS POST Google Apps Script)
+            // Untuk Prototype, kita gunakan POST fetch (no-cors) ke backend, tapi validasi client side
             const formData = new FormData();
             formData.append('action', 'login');
             formData.append('username', user);
@@ -294,16 +300,14 @@
                 }
             })
             .catch(e => {
-                // Fallback error (Biasanya kena CORS di local file)
-                // Jika error CORS, kita tidak bisa baca JSON.
-                // Untuk demo, kita izinkan login jika admin/admin
+                // Fallback untuk demo jika script error CORS
                 if(user === 'admin' && pass === 'admin123') {
-                     localStorage.setItem('simolca_user', 'Admin (Local)');
+                     localStorage.setItem('simolca_user', 'Admin');
                      showDashboard('Admin');
                 } else {
                     btn.disabled = false;
-                    btn.innerHTML = 'Masuk';
-                    err.innerText = "Gagal koneksi atau CORS. Coba user: admin / pass: admin123";
+                    btn.innerHTML = 'Masuk Dashboard';
+                    err.innerText = "Gagal koneksi. Coba user: admin / pass: admin123 (Mode Offline)";
                     err.classList.remove('hidden');
                 }
             });
@@ -312,13 +316,15 @@
         function showDashboard(username) {
             currentUser = username;
             document.getElementById('display-username').innerText = username;
+            document.getElementById('dropdown-username').innerText = username;
             
-            // Animasi Swap
+            // Update nama di profil modal
+            document.getElementById('profile-name-display').innerText = username;
+
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('main-dashboard').classList.remove('hidden');
             document.getElementById('main-dashboard').classList.add('fade-in');
             
-            // Mulai Fetch Data
             fetchData();
             getWeather();
             setInterval(fetchData, 5000); 
@@ -330,73 +336,64 @@
             location.reload();
         }
 
-        // 2. FORGOT PASSWORD
+        // === PROFILE FUNCTIONS (NEW) ===
+        function toggleProfile() { 
+            document.getElementById('profile-modal').classList.toggle('hidden'); 
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const output = document.getElementById('profile-preview');
+                output.src = reader.result;
+            };
+            if(event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+
+        function saveProfile() {
+            const imgPreview = document.getElementById('profile-preview');
+            // Simpan Data URL (Base64) ke Local Storage
+            localStorage.setItem('simolca_profile_pic', imgPreview.src);
+            
+            // Update Navbar Image
+            document.getElementById('navbar-profile-pic').src = imgPreview.src;
+            
+            alert("Profil berhasil diperbarui!");
+            toggleProfile();
+        }
+
+        function loadProfilePic() {
+            const savedPic = localStorage.getItem('simolca_profile_pic');
+            if(savedPic) {
+                document.getElementById('navbar-profile-pic').src = savedPic;
+                document.getElementById('profile-preview').src = savedPic;
+            }
+        }
+
+        // === MODALS PASSWORD ===
         function toggleForgotPass() { document.getElementById('forgot-modal').classList.toggle('hidden'); }
+        function toggleChangePass() { document.getElementById('change-pass-modal').classList.toggle('hidden'); }
         
         function doForgotPass() {
             const email = document.getElementById('forgot-email').value;
-            const btn = document.getElementById('btn-forgot');
-            
             if(!email) return alert("Isi email!");
-            
-            btn.innerText = "Mengirim...";
-            btn.disabled = true;
-
-            fetch(API_URL, {
-                method: 'POST',
-                body: new URLSearchParams(`action=forgot_pass&email=${email}`)
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                toggleForgotPass();
-                btn.innerText = "Kirim Password Baru";
-                btn.disabled = false;
-            })
-            .catch(e => {
-                alert("Permintaan terkirim (Cek Email). Jika error: Pastikan script dideploy sebagai 'Anyone'.");
-                toggleForgotPass();
-                btn.innerText = "Kirim Password Baru";
-                btn.disabled = false;
-            });
+            fetch(API_URL, { method: 'POST', body: new URLSearchParams(`action=forgot_pass&email=${email}`) });
+            alert("Permintaan dikirim. Cek email Anda.");
+            toggleForgotPass();
         }
 
-        // 3. CHANGE PASSWORD
-        function toggleChangePass() { document.getElementById('change-pass-modal').classList.toggle('hidden'); }
-        
         function doChangePass() {
             const oldP = document.getElementById('cp-old').value;
             const newP = document.getElementById('cp-new').value;
-            const btn = document.getElementById('btn-changepass');
-            
             if(!oldP || !newP) return alert("Isi semua kolom!");
-            
-            btn.innerText = "Menyimpan...";
-            btn.disabled = true;
-            
-            fetch(API_URL, {
-                method: 'POST',
-                body: new URLSearchParams(`action=change_pass&username=${currentUser}&old_pass=${oldP}&new_pass=${newP}`)
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                if(data.status === 'success') {
-                    toggleChangePass();
-                    document.getElementById('cp-old').value = '';
-                    document.getElementById('cp-new').value = '';
-                }
-                btn.innerText = "Simpan Password Baru";
-                btn.disabled = false;
-            })
-            .catch(e => {
-                alert("Gagal koneksi ke server.");
-                btn.innerText = "Simpan Password Baru";
-                btn.disabled = false;
-            });
+            fetch(API_URL, { method: 'POST', body: new URLSearchParams(`action=change_pass&username=${currentUser}&old_pass=${oldP}&new_pass=${newP}`) });
+            alert("Permintaan ganti password dikirim.");
+            toggleChangePass();
         }
 
-        // === DASHBOARD LOGIC (SAMA SEPERTI SEBELUMNYA) ===
+        // === DASHBOARD LOGIC ===
         function getWeather() {
             const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,weather_code&timezone=auto`;
             fetch(weatherUrl).then(r=>r.json()).then(data => {
@@ -404,7 +401,6 @@
                 let desc = "CERAH";
                 if (code >= 1 && code <= 3) desc = "BERAWAN";
                 else if (code >= 51) desc = "HUJAN";
-                
                 document.getElementById('weather-desc').innerText = desc;
                 document.getElementById('weather-temp').innerText = data.current.temperature_2m;
                 document.getElementById('weather-hum').innerText = data.current.relative_humidity_2m;
@@ -412,24 +408,20 @@
         }
 
         function fetchData() {
-            fetch(API_URL)
-                .then(response => response.json())
-                .then(data => {
-                    globalData = data;
-                    updateDashboard();
-                    checkConnectionStatus(data);
-                })
-                .catch(err => setOfflineStatus());
+            fetch(API_URL).then(r=>r.json()).then(d=>{globalData=d;updateDashboard();checkConnectionStatus(d)}).catch(e=>setOfflineStatus());
         }
 
         function checkConnectionStatus(data) {
             if (data.length === 0) return;
             const diffSeconds = (new Date() - new Date(data[data.length - 1].waktu)) / 1000;
             const badge = document.getElementById('status-badge');
+            const dotPing = document.getElementById('status-dot-ping');
+            const dot = document.getElementById('status-dot');
             
             if (diffSeconds < 60) {
                 badge.className = "hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#006400] text-white text-xs font-bold border border-green-800 shadow-sm";
                 document.getElementById('status-text').innerText = "Online";
+                dotPing.classList.remove('hidden'); dot.className = "relative inline-flex rounded-full h-2 w-2 bg-green-400";
             } else {
                 setOfflineStatus();
             }
@@ -437,31 +429,16 @@
 
         function setOfflineStatus() {
             const badge = document.getElementById('status-badge');
+            const dotPing = document.getElementById('status-dot-ping');
+            const dot = document.getElementById('status-dot');
             badge.className = "hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#8B0000] text-white text-xs font-bold border border-red-800 shadow-sm";
             document.getElementById('status-text').innerText = "Offline";
+            dotPing.classList.add('hidden'); dot.className = "relative inline-flex rounded-full h-2 w-2 bg-red-500";
         }
 
         function toggleCalibration() { document.getElementById('cal-panel').classList.toggle('hidden'); }
-
-        function loadCalibration() {
-            const saved = localStorage.getItem('water_calibration');
-            if (saved) {
-                calibration = JSON.parse(saved);
-                document.getElementById('cal-input-ph').value = calibration.ph;
-                document.getElementById('cal-input-suhu').value = calibration.suhu;
-                document.getElementById('cal-input-tds').value = calibration.tds;
-            }
-        }
-
-        function saveCalibration() {
-            calibration.ph = parseFloat(document.getElementById('cal-input-ph').value) || 0;
-            calibration.suhu = parseFloat(document.getElementById('cal-input-suhu').value) || 0;
-            calibration.tds = parseFloat(document.getElementById('cal-input-tds').value) || 0;
-            localStorage.setItem('water_calibration', JSON.stringify(calibration));
-            alert("Kalibrasi tersimpan!");
-            toggleCalibration();
-            updateDashboard(); 
-        }
+        function loadCalibration() { const s=localStorage.getItem('water_calibration'); if(s) calibration=JSON.parse(s); document.getElementById('cal-input-ph').value=calibration.ph; document.getElementById('cal-input-suhu').value=calibration.suhu; document.getElementById('cal-input-tds').value=calibration.tds; }
+        function saveCalibration() { calibration.ph=parseFloat(document.getElementById('cal-input-ph').value)||0; calibration.suhu=parseFloat(document.getElementById('cal-input-suhu').value)||0; calibration.tds=parseFloat(document.getElementById('cal-input-tds').value)||0; localStorage.setItem('water_calibration',JSON.stringify(calibration)); alert("Kalibrasi tersimpan!"); toggleCalibration(); updateDashboard(); }
 
         function updateDashboard() {
             if (globalData.length === 0) return;
@@ -508,10 +485,7 @@
                         { label: 'TDS', data: data.map(i=>i.tds+calibration.tds), borderColor: '#003366', tension: 0.4, yAxisID: 'y1' }
                     ]
                 },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { y: {position:'left'}, y1: {position:'right', grid:{drawOnChartArea:false}} }
-                }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: {position:'left'}, y1: {position:'right', grid:{drawOnChartArea:false}} } }
             });
         }
 
