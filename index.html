@@ -22,12 +22,13 @@
 
     <nav class="bg-[#003366] text-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            
             <div class="flex flex-col items-start">
-    <div class="bg-white p-1.5 rounded-lg shadow-sm mb-1">
-        <img src="simolca_logo.png" alt="Logo SIMOLCA" class="h-12 w-auto object-contain">
-    </div>
-    <span class="text-[11px] font-medium tracking-wide text-blue-200">Sistem Monitoring Limbah Cair</span>
-</div>
+                <div class="bg-white p-1.5 rounded-lg shadow-sm mb-1">
+                    <img src="simolca_logo.png" alt="Logo SIMOLCA" class="h-10 w-auto object-contain">
+                </div>
+                <span class="text-[11px] font-medium tracking-wide text-blue-200">Sistem Monitoring Limbah Cair</span>
+            </div>
             
             <div class="flex items-center gap-4">
                 <div id="status-badge" class="flex items-center gap-2 px-3 py-1 rounded-full bg-[#002244] text-slate-200 text-xs font-semibold border border-blue-800/50 transition-all duration-300">
@@ -193,8 +194,11 @@
     </footer>
 
     <script>
-        // --- KONFIGURASI ---
-        const API_URL = "URL_GOOGLE_SCRIPT_ANDA_DISINI"; 
+        // --- KONFIGURASI PENTING ---
+        // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI BAWAH INI
+        const API_URL = "MASUKKAN_URL_GOOGLE_SCRIPT_ANDA_DISINI"; 
+        
+        // Lokasi untuk Cuaca (Default Bogor)
         const LAT = -6.595038; 
         const LON = 106.816635;
 
@@ -303,17 +307,15 @@
             updateDashboard(); 
         }
 
-        // --- UPDATE DASHBOARD DENGAN LOGIKA BAKU MUTU BARU ---
+        // --- UPDATE DASHBOARD DENGAN STATUS BAKU MUTU ---
         function updateDashboard() {
             if (globalData.length === 0) return;
             const latest = globalData[globalData.length - 1];
             
-            // Hitung nilai akhir dengan kalibrasi
             const finalPh = parseFloat(latest.ph) + calibration.ph;
             const finalSuhu = parseFloat(latest.suhu) + calibration.suhu;
             const finalTds = parseFloat(latest.tds) + calibration.tds;
 
-            // Update Nilai Angka
             document.getElementById('val-ph').innerText = finalPh.toFixed(1);
             document.getElementById('val-suhu').innerText = finalSuhu.toFixed(1);
             document.getElementById('val-tds').innerText = finalTds.toFixed(0);
@@ -321,9 +323,9 @@
             document.getElementById('raw-suhu-info').innerText = `Raw: ${parseFloat(latest.suhu).toFixed(1)} ${calibration.suhu >= 0 ? '+' : ''}${calibration.suhu}`;
             document.getElementById('raw-tds-info').innerText = `Raw: ${parseFloat(latest.tds).toFixed(0)} ${calibration.tds >= 0 ? '+' : ''}${calibration.tds}`;
 
-            // --- LOGIKA STATUS BAKU MUTU ---
+            // --- LOGIKA STATUS WARNA & TEXT ---
 
-            // 1. pH Logic (Rentang 6 - 9 Aman)
+            // 1. pH (6.0 - 9.0)
             const boxPh = document.getElementById('status-box-ph');
             if (finalPh >= 6 && finalPh <= 9) {
                 boxPh.innerText = "Memenuhi Baku Mutu";
@@ -333,7 +335,7 @@
                 boxPh.className = "w-full mt-auto py-3 rounded-lg text-center font-bold text-sm text-white transition-colors duration-300 bg-red-600 shadow-md shadow-red-200 animate-pulse";
             }
 
-            // 2. Suhu Logic (Dibawah 35 Aman)
+            // 2. Suhu (< 35)
             const boxSuhu = document.getElementById('status-box-suhu');
             if (finalSuhu < 35) {
                 boxSuhu.innerText = "Memenuhi Baku Mutu";
@@ -343,7 +345,7 @@
                 boxSuhu.className = "w-full mt-auto py-3 rounded-lg text-center font-bold text-sm text-white transition-colors duration-300 bg-red-600 shadow-md shadow-red-200 animate-pulse";
             }
 
-            // 3. TDS Logic (Maksimum 2000 Aman)
+            // 3. TDS (<= 2000)
             const boxTds = document.getElementById('status-box-tds');
             if (finalTds <= 2000) {
                 boxTds.innerText = "Memenuhi Baku Mutu";
@@ -353,7 +355,6 @@
                 boxTds.className = "w-full mt-auto py-3 rounded-lg text-center font-bold text-sm text-white transition-colors duration-300 bg-red-600 shadow-md shadow-red-200 animate-pulse";
             }
 
-            // Update Chart
             const selectedMonth = document.getElementById('filter-bulan').value;
             const filteredData = globalData.filter(item => new Date(item.waktu).toISOString().slice(0, 7) === selectedMonth);
             renderChart(filteredData);
@@ -410,5 +411,4 @@
         }
     </script>
 </body>
-
 </html>
