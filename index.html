@@ -30,14 +30,22 @@
             </div>
             <div class="p-8 space-y-5">
                 <div id="login-error" class="hidden bg-red-100 text-red-600 text-xs p-3 rounded-lg text-center"></div>
+                
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Username</label>
                     <input type="text" id="login-user" class="w-full border border-slate-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#003366] transition">
                 </div>
+                
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
-                    <input type="password" id="login-pass" class="w-full border border-slate-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#003366] transition">
+                    <div class="relative">
+                        <input type="password" id="login-pass" class="w-full border border-slate-300 rounded-lg px-4 py-3 pr-10 focus:outline-none focus:border-[#003366] transition">
+                        <button type="button" onclick="togglePassword('login-pass', 'icon-login')" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-[#003366]">
+                            <i id="icon-login" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
+                
                 <button onclick="doLogin()" id="btn-login" class="w-full bg-[#003366] hover:bg-[#002244] text-white font-bold py-3 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> Masuk Dashboard
                 </button>
@@ -63,8 +71,21 @@
             <button onclick="toggleChangePass()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark fa-lg"></i></button>
             <h3 class="text-lg font-bold text-[#003366] mb-4">Ganti Password</h3>
             <div class="space-y-3">
-                <input type="password" id="cp-old" placeholder="Password Lama" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:border-[#003366]">
-                <input type="password" id="cp-new" placeholder="Password Baru" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:border-[#003366]">
+                
+                <div class="relative">
+                    <input type="password" id="cp-old" placeholder="Password Lama" class="w-full border border-slate-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:border-[#003366]">
+                    <button type="button" onclick="togglePassword('cp-old', 'icon-cp-old')" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-[#003366]">
+                        <i id="icon-cp-old" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+
+                <div class="relative">
+                    <input type="password" id="cp-new" placeholder="Password Baru" class="w-full border border-slate-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:border-[#003366]">
+                    <button type="button" onclick="togglePassword('cp-new', 'icon-cp-new')" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-[#003366]">
+                        <i id="icon-cp-new" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+
                 <button onclick="doChangePass()" id="btn-changepass" class="w-full bg-[#003366] hover:bg-[#002244] text-white py-2 rounded-lg font-bold text-sm">Simpan Password Baru</button>
             </div>
         </div>
@@ -231,7 +252,7 @@
 
     <script>
         // === KONFIGURASI ===
-        const API_URL = "script.google.com/macros/s/AKfycbyMimdUa5qRifGcMBsvqSjk3slLSuW_fGtlJMUU7aVZ9CmHEq8QGYoDd5tdUMExxWFBFQ/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbzZnRouaCMyrK7y2vKejKhGNz26LXpXSv9VV4KRnkm8L5z2Y6DKf5mO75pE6OXmb-WpwA/exec"; 
         const LAT = -6.595038; 
         const LON = 106.816635;
 
@@ -262,22 +283,31 @@
             }, 1000);
         };
 
+        // --- PASSWORD TOGGLE FUNCTION ---
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        }
+
         // --- NEW: LOGIKA DROPDOWN CLICK ---
         function toggleUserDropdown() {
             const dropdown = document.getElementById('user-dropdown-menu');
             dropdown.classList.toggle('hidden');
         }
-
-        // Event Listener untuk menutup dropdown jika klik diluar
         window.onclick = function(event) {
             const dropdown = document.getElementById('user-dropdown-menu');
             const btn = document.getElementById('user-menu-btn');
-            
-            // Jika yang diklik BUKAN tombol dan BUKAN dropdown itu sendiri
             if (!btn.contains(event.target) && !dropdown.contains(event.target)) {
-                if (!dropdown.classList.contains('hidden')) {
-                    dropdown.classList.add('hidden');
-                }
+                if (!dropdown.classList.contains('hidden')) { dropdown.classList.add('hidden'); }
             }
         }
 
@@ -292,6 +322,7 @@
             btn.disabled = true;
             err.classList.add('hidden');
 
+            // Simulasi Login
             const formData = new FormData();
             formData.append('action', 'login');
             formData.append('username', user);
@@ -315,7 +346,6 @@
                 }
             })
             .catch(e => {
-                // Fallback untuk demo
                 if(user === 'admin' && pass === 'admin123') {
                      localStorage.setItem('simolca_user', 'Admin');
                      showDashboard('Admin');
@@ -332,10 +362,7 @@
             currentUser = username;
             document.getElementById('display-username').innerText = username;
             document.getElementById('dropdown-username').innerText = username;
-            
-            // Update nama di profil modal
             document.getElementById('profile-name-display').innerText = username;
-
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('main-dashboard').classList.remove('hidden');
             document.getElementById('main-dashboard').classList.add('fade-in');
@@ -354,21 +381,13 @@
         // === PROFILE FUNCTIONS ===
         function toggleProfile() { 
             document.getElementById('profile-modal').classList.toggle('hidden'); 
-            // Tutup dropdown menu saat buka modal
             document.getElementById('user-dropdown-menu').classList.add('hidden');
         }
-
         function previewImage(event) {
             const reader = new FileReader();
-            reader.onload = function(){
-                const output = document.getElementById('profile-preview');
-                output.src = reader.result;
-            };
-            if(event.target.files[0]) {
-                reader.readAsDataURL(event.target.files[0]);
-            }
+            reader.onload = function(){ document.getElementById('profile-preview').src = reader.result; };
+            if(event.target.files[0]) { reader.readAsDataURL(event.target.files[0]); }
         }
-
         function saveProfile() {
             const imgPreview = document.getElementById('profile-preview');
             localStorage.setItem('simolca_profile_pic', imgPreview.src);
@@ -376,7 +395,6 @@
             alert("Profil berhasil diperbarui!");
             toggleProfile();
         }
-
         function loadProfilePic() {
             const savedPic = localStorage.getItem('simolca_profile_pic');
             if(savedPic) {
@@ -387,13 +405,10 @@
 
         // === MODALS PASSWORD ===
         function toggleForgotPass() { document.getElementById('forgot-modal').classList.toggle('hidden'); }
-        
         function toggleChangePass() { 
             document.getElementById('change-pass-modal').classList.toggle('hidden'); 
-            // Tutup dropdown menu
             document.getElementById('user-dropdown-menu').classList.add('hidden');
         }
-        
         function doForgotPass() {
             const email = document.getElementById('forgot-email').value;
             if(!email) return alert("Isi email!");
@@ -401,7 +416,6 @@
             alert("Permintaan dikirim. Cek email Anda.");
             toggleForgotPass();
         }
-
         function doChangePass() {
             const oldP = document.getElementById('cp-old').value;
             const newP = document.getElementById('cp-new').value;
@@ -424,18 +438,13 @@
                 document.getElementById('weather-hum').innerText = data.current.relative_humidity_2m;
             });
         }
-
-        function fetchData() {
-            fetch(API_URL).then(r=>r.json()).then(d=>{globalData=d;updateDashboard();checkConnectionStatus(d)}).catch(e=>setOfflineStatus());
-        }
-
+        function fetchData() { fetch(API_URL).then(r=>r.json()).then(d=>{globalData=d;updateDashboard();checkConnectionStatus(d)}).catch(e=>setOfflineStatus()); }
         function checkConnectionStatus(data) {
             if (data.length === 0) return;
             const diffSeconds = (new Date() - new Date(data[data.length - 1].waktu)) / 1000;
             const badge = document.getElementById('status-badge');
             const dotPing = document.getElementById('status-dot-ping');
             const dot = document.getElementById('status-dot');
-            
             if (diffSeconds < 60) {
                 badge.className = "hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#006400] text-white text-xs font-bold border border-green-800 shadow-sm";
                 document.getElementById('status-text').innerText = "Online";
@@ -444,7 +453,6 @@
                 setOfflineStatus();
             }
         }
-
         function setOfflineStatus() {
             const badge = document.getElementById('status-badge');
             const dotPing = document.getElementById('status-dot-ping');
@@ -453,35 +461,25 @@
             document.getElementById('status-text').innerText = "Offline";
             dotPing.classList.add('hidden'); dot.className = "relative inline-flex rounded-full h-2 w-2 bg-red-500";
         }
-
-        function toggleCalibration() { 
-            document.getElementById('cal-panel').classList.toggle('hidden'); 
-            // Tutup dropdown menu
-            document.getElementById('user-dropdown-menu').classList.add('hidden');
-        }
+        function toggleCalibration() { document.getElementById('cal-panel').classList.toggle('hidden'); document.getElementById('user-dropdown-menu').classList.add('hidden'); }
         function loadCalibration() { const s=localStorage.getItem('water_calibration'); if(s) calibration=JSON.parse(s); document.getElementById('cal-input-ph').value=calibration.ph; document.getElementById('cal-input-suhu').value=calibration.suhu; document.getElementById('cal-input-tds').value=calibration.tds; }
         function saveCalibration() { calibration.ph=parseFloat(document.getElementById('cal-input-ph').value)||0; calibration.suhu=parseFloat(document.getElementById('cal-input-suhu').value)||0; calibration.tds=parseFloat(document.getElementById('cal-input-tds').value)||0; localStorage.setItem('water_calibration',JSON.stringify(calibration)); alert("Kalibrasi tersimpan!"); toggleCalibration(); updateDashboard(); }
-
         function updateDashboard() {
             if (globalData.length === 0) return;
             const latest = globalData[globalData.length - 1];
             const fPh = parseFloat(latest.ph) + calibration.ph;
             const fSuhu = parseFloat(latest.suhu) + calibration.suhu;
             const fTds = parseFloat(latest.tds) + calibration.tds;
-
             document.getElementById('val-ph').innerText = fPh.toFixed(1);
             document.getElementById('val-suhu').innerText = fSuhu.toFixed(1);
             document.getElementById('val-tds').innerText = fTds.toFixed(0);
-            
             updateStatusBox('status-box-ph', fPh >= 6 && fPh <= 9);
             updateStatusBox('status-box-suhu', fSuhu < 35);
             updateStatusBox('status-box-tds', fTds <= 2000, true);
-
             const filteredData = globalData.filter(item => new Date(item.waktu).toISOString().slice(0, 7) === document.getElementById('filter-bulan').value);
             renderChart(filteredData);
             window.exportData = filteredData; 
         }
-
         function updateStatusBox(id, isSafe, isBlue = false) {
             const box = document.getElementById(id);
             if(isSafe) {
@@ -492,7 +490,6 @@
                 box.className = "w-full py-3 bg-red-600 text-white text-center text-xs font-bold uppercase tracking-wide animate-pulse shadow-inner";
             }
         }
-
         function renderChart(data) {
             const labels = data.map(i => `${new Date(i.waktu).getDate()}/${new Date(i.waktu).getMonth()+1} ${new Date(i.waktu).getHours()}:${new Date(i.waktu).getMinutes()}`);
             const ctx = document.getElementById('waterChart').getContext('2d');
@@ -510,7 +507,6 @@
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: {position:'left'}, y1: {position:'right', grid:{drawOnChartArea:false}} } }
             });
         }
-
         function exportToExcel() {
             if(!window.exportData || window.exportData.length === 0) return alert("No Data");
             const w = document.getElementById('weather-desc').innerText;
