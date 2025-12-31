@@ -83,12 +83,10 @@
                     </label>
                     <input type="file" id="profile-upload" class="hidden" accept="image/*" onchange="previewImage(event)">
                 </div>
-
                 <div class="w-full text-center">
                     <h4 id="profile-name-display" class="font-bold text-lg text-slate-800">User</h4>
                     <p class="text-xs text-slate-500">Administrator</p>
                 </div>
-
                 <div class="w-full pt-2">
                     <button onclick="saveProfile()" class="w-full bg-[#006633] hover:bg-[#004d26] text-white py-2 rounded-lg font-bold text-sm shadow-md">
                         <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Profil
@@ -119,17 +117,17 @@
                          <span id="status-text">Offline</span>
                     </div>
 
-                    <div class="relative group">
-                        <button class="flex items-center gap-3 text-slate-200 hover:text-white font-medium text-sm focus:outline-none">
+                    <div class="relative">
+                        <button onclick="toggleUserDropdown()" id="user-menu-btn" class="flex items-center gap-3 text-slate-200 hover:text-white font-medium text-sm focus:outline-none">
                             <div class="text-right hidden md:block">
                                 <p id="display-username" class="text-sm font-semibold leading-none">User</p>
                                 <p class="text-[10px] text-blue-300">Admin</p>
                             </div>
-                            <img id="navbar-profile-pic" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" class="w-9 h-9 rounded-full object-cover border-2 border-blue-400/50 shadow-sm">
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                            <img id="navbar-profile-pic" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" class="w-9 h-9 rounded-full object-cover border-2 border-blue-400/50 shadow-sm pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-xs pointer-events-none"></i>
                         </button>
 
-                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 text-slate-800 hidden group-hover:block border border-slate-100 z-50 transition-all">
+                        <div id="user-dropdown-menu" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 text-slate-800 hidden border border-slate-100 z-50 transition-all origin-top-right">
                             <div class="px-4 py-3 border-b border-slate-100 mb-1">
                                 <p class="text-xs text-slate-500">Login sebagai</p>
                                 <p id="dropdown-username" class="font-bold text-[#003366]">User</p>
@@ -233,7 +231,7 @@
 
     <script>
         // === KONFIGURASI ===
-        const API_URL = "https://script.google.com/macros/s/AKfycbyMimdUa5qRifGcMBsvqSjk3slLSuW_fGtlJMUU7aVZ9CmHEq8QGYoDd5tdUMExxWFBFQ/exec"; 
+        const API_URL = "script.google.com/macros/s/AKfycbyMimdUa5qRifGcMBsvqSjk3slLSuW_fGtlJMUU7aVZ9CmHEq8QGYoDd5tdUMExxWFBFQ/exec"; 
         const LAT = -6.595038; 
         const LON = 106.816635;
 
@@ -264,6 +262,25 @@
             }, 1000);
         };
 
+        // --- NEW: LOGIKA DROPDOWN CLICK ---
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('user-dropdown-menu');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Event Listener untuk menutup dropdown jika klik diluar
+        window.onclick = function(event) {
+            const dropdown = document.getElementById('user-dropdown-menu');
+            const btn = document.getElementById('user-menu-btn');
+            
+            // Jika yang diklik BUKAN tombol dan BUKAN dropdown itu sendiri
+            if (!btn.contains(event.target) && !dropdown.contains(event.target)) {
+                if (!dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        }
+
         // === AUTH FUNCTIONS ===
         function doLogin() {
             const user = document.getElementById('login-user').value;
@@ -275,8 +292,6 @@
             btn.disabled = true;
             err.classList.add('hidden');
 
-            // Simulasi Login (Karena CORS POST Google Apps Script)
-            // Untuk Prototype, kita gunakan POST fetch (no-cors) ke backend, tapi validasi client side
             const formData = new FormData();
             formData.append('action', 'login');
             formData.append('username', user);
@@ -300,7 +315,7 @@
                 }
             })
             .catch(e => {
-                // Fallback untuk demo jika script error CORS
+                // Fallback untuk demo
                 if(user === 'admin' && pass === 'admin123') {
                      localStorage.setItem('simolca_user', 'Admin');
                      showDashboard('Admin');
@@ -336,9 +351,11 @@
             location.reload();
         }
 
-        // === PROFILE FUNCTIONS (NEW) ===
+        // === PROFILE FUNCTIONS ===
         function toggleProfile() { 
             document.getElementById('profile-modal').classList.toggle('hidden'); 
+            // Tutup dropdown menu saat buka modal
+            document.getElementById('user-dropdown-menu').classList.add('hidden');
         }
 
         function previewImage(event) {
@@ -354,12 +371,8 @@
 
         function saveProfile() {
             const imgPreview = document.getElementById('profile-preview');
-            // Simpan Data URL (Base64) ke Local Storage
             localStorage.setItem('simolca_profile_pic', imgPreview.src);
-            
-            // Update Navbar Image
             document.getElementById('navbar-profile-pic').src = imgPreview.src;
-            
             alert("Profil berhasil diperbarui!");
             toggleProfile();
         }
@@ -374,7 +387,12 @@
 
         // === MODALS PASSWORD ===
         function toggleForgotPass() { document.getElementById('forgot-modal').classList.toggle('hidden'); }
-        function toggleChangePass() { document.getElementById('change-pass-modal').classList.toggle('hidden'); }
+        
+        function toggleChangePass() { 
+            document.getElementById('change-pass-modal').classList.toggle('hidden'); 
+            // Tutup dropdown menu
+            document.getElementById('user-dropdown-menu').classList.add('hidden');
+        }
         
         function doForgotPass() {
             const email = document.getElementById('forgot-email').value;
@@ -436,7 +454,11 @@
             dotPing.classList.add('hidden'); dot.className = "relative inline-flex rounded-full h-2 w-2 bg-red-500";
         }
 
-        function toggleCalibration() { document.getElementById('cal-panel').classList.toggle('hidden'); }
+        function toggleCalibration() { 
+            document.getElementById('cal-panel').classList.toggle('hidden'); 
+            // Tutup dropdown menu
+            document.getElementById('user-dropdown-menu').classList.add('hidden');
+        }
         function loadCalibration() { const s=localStorage.getItem('water_calibration'); if(s) calibration=JSON.parse(s); document.getElementById('cal-input-ph').value=calibration.ph; document.getElementById('cal-input-suhu').value=calibration.suhu; document.getElementById('cal-input-tds').value=calibration.tds; }
         function saveCalibration() { calibration.ph=parseFloat(document.getElementById('cal-input-ph').value)||0; calibration.suhu=parseFloat(document.getElementById('cal-input-suhu').value)||0; calibration.tds=parseFloat(document.getElementById('cal-input-tds').value)||0; localStorage.setItem('water_calibration',JSON.stringify(calibration)); alert("Kalibrasi tersimpan!"); toggleCalibration(); updateDashboard(); }
 
